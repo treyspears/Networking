@@ -1,0 +1,70 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Engine\Rendering\BitmapFont.cpp" />
+    <ClCompile Include="Engine\Rendering\ConsoleLog.cpp" />
+    <ClCompile Include="Engine\Rendering\DrawableTextQuad.cpp" />
+    <ClCompile Include="Engine\Rendering\light.cpp" />
+    <ClCompile Include="Engine\Rendering\Material.cpp" />
+    <ClCompile Include="Engine\Rendering\OpenGLRenderer.cpp" />
+    <ClCompile Include="Engine\Rendering\stb_image.c" />
+    <ClCompile Include="Engine\Rendering\Texture.cpp" />
+    <ClCompile Include="Engine\Utilities\CommonUtilities.cpp" />
+    <ClCompile Include="Engine\Utilities\InputHandler.cpp" />
+    <ClCompile Include="Engine\Utilities\pugixml.cpp" />
+    <ClCompile Include="Engine\Utilities\Time.cpp" />
+    <ClCompile Include="Engine\Utilities\XMLUtilities.cpp" />
+    <ClCompile Include="Engine\Physics\AABB3.cpp" />
+    <ClCompile Include="Engine\Primitives\Color.cpp" />
+    <ClCompile Include="Engine\Utilities\Clock.cpp" />
+    <ClCompile Include="Engine\Utilities\ProfileSection.cpp" />
+    <ClCompile Include="Engine\Utilities\ErrorWarningAssert.cpp" />
+    <ClCompile Include="Engine\Utilities\EngineCommandLineListener.cpp" />
+    <ClCompile Include="Engine\Utilities\JobManager.cpp" />
+    <ClCompile Include="Engine\Utilities\WorkerThread.cpp" />
+    <ClCompile Include="Engine\Utilities\Job.cpp" />
+    <ClCompile Include="Engine\Utilities\MemoryManager.cpp" />
+    <ClCompile Include="Engine\Utilities\NewAndDeleteOverrides.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Engine\Rendering\BitmapFont.hpp" />
+    <ClInclude Include="Engine\Rendering\ConsoleLog.hpp" />
+    <ClInclude Include="Engine\Rendering\DrawableTextQuad.hpp" />
+    <ClInclude Include="Engine\Rendering\geometry.h" />
+    <ClInclude Include="Engine\Rendering\glext.h" />
+    <ClInclude Include="Engine\Rendering\Light.hpp" />
+    <ClInclude Include="Engine\Rendering\Material.hpp" />
+    <ClInclude Include="Engine\Rendering\OpenGLRenderer.hpp" />
+    <ClInclude Include="Engine\Rendering\stb_image.h" />
+    <ClInclude Include="Engine\Rendering\Texture.hpp" />
+    <ClInclude Include="Engine\Rendering\Vertex.hpp" />
+    <ClInclude Include="Engine\Utilities\CommandRegistry.hpp" />
+    <ClInclude Include="Engine\Utilities\CommonUtilities.hpp" />
+    <ClInclude Include="Engine\Utilities\EventSystem.hpp" />
+    <ClInclude Include="Engine\Utilities\InputHandler.hpp" />
+    <ClInclude Include="Engine\Utilities\NamedProperties.hpp" />
+    <ClInclude Include="Engine\Utilities\pugiconfig.hpp" />
+    <ClInclude Include="Engine\Utilities\pugixml.hpp" />
+    <ClInclude Include="Engine\Utilities\Time.hpp" />
+    <ClInclude Include="Engine\Utilities\WeightedChoice.hpp" />
+    <ClInclude Include="Engine\Utilities\XMLUtilities.hpp" />
+    <ClInclude Include="Engine\Physics\AABB3.hpp" />
+    <ClInclude Include="Engine\Physics\Body.hpp" />
+    <ClInclude Include="Engine\Primitives\Color.hpp" />
+    <ClInclude Include="Engine\Primitives\EulerAngles.hpp" />
+    <ClInclude Include="Engine\Primitives\Matrix44.hpp" />
+    <ClInclude Include="Engine\Primitives\Vector2.hpp" />
+    <ClInclude Include="Engine\Primitives\Vector3.hpp" />
+    <ClInclude Include="Engine\Primitives\Vector4.hpp" />
+    <ClInclude Include="Engine\Utilities\Clock.hpp" />
+    <ClInclude Include="Engine\Utilities\ProfileSection.hpp" />
+    <ClInclude Include="Engine\Utilities\ErrorWarningAssert.hpp" />
+    <ClInclude Include="Engine\Utilities\EngineCommandLineListener.hpp" />
+    <ClInclude Include="Engine\Utilities\Job.hpp" />
+    <ClInclude Include="Engine\Utilities\WorkerThread.hpp" />
+    <ClInclude Include="Engine\Utilities\JobManager.hpp" />
+    <ClInclude Include="Engine\Utilities\MemoryManager.hpp" />
+    <ClInclude Include="Engine\Utilities\NewAndDeleteOverrides.hpp" />
+    <ClInclude Include="Engine\Engine_GameSpecificIncludes.hpp" />
+  </ItemGroup>
+</Project>
