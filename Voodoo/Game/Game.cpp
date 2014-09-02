@@ -48,6 +48,8 @@ int g_currentLogIndex = 0;
 #define STARTING_SERVER_IP "127.0.0.1"
 #define STARTING_SERVER_PORT "5554"
 
+const playerID PLAYER_ID( 255, 0, 0 );
+
  u_long BLOCKING = 0;
  u_long NON_BLOCKING = 1;
 
@@ -109,7 +111,6 @@ struct player
 	float interpolationDuration;
 };
 
-const playerID PLAYER_ID( 255, 0, 0 );
 const Vector2f INITIAL_PLAYER_POSITION( 0.f, 0.f );
 const float INTERPOLATION_SCALE = 0.1f;
 player g_localPlayer;
