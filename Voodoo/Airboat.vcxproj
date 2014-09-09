@@ -106,6 +106,7 @@ xcopy "$(SolutionDir)..\Roux Engine\Engine\External\DLLs\*" "$(SolutionDir)Temp\
     </PreLinkEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Game\AppCommandLineListener.cpp" />
     <ClCompile Include="Game\Game.cpp" />
     <ClCompile Include="Game\Main_Win32.cpp" />
   </ItemGroup>
@@ -130,7 +131,9 @@ xcopy "$(SolutionDir)..\Roux Engine\Engine\External\DLLs\*" "$(SolutionDir)Temp\
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Game\AppCommandLineListener.hpp" />
     <ClInclude Include="Game\AppDefinesForEngine.hpp" />
+    <ClInclude Include="Game\CS6Packet.hpp" />
     <ClInclude Include="Game\Game.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

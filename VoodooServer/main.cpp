@@ -8,38 +8,18 @@
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <vector>
+#include <map>
+#include <time.h>
 
 #include "Time.hpp"
+#include "CS6Packet.hpp"
 
 #pragma comment( lib, "WS2_32" ) // Link in the WS2_32.lib static library
 
 //-----------------------------------------------------------------------------------------------
-const int BUFFER_LIMIT = 512;
-const float MAX_SECONDS_OF_INACTIVITY = 5.f;
-const float SEND_DELAY = 0.1f;
 
-float currentSendElapsedTime = 0.f;
-
-struct packet
-{
-	packet()
-		: id( -1 )
-		, r( 0 )
-		, g( 0 )
-		, b( 0 )
-		, x( -1.f )
-		, y( -1.f )
-	{
-
-	}
-
-	char id;
-	unsigned char r;
-	unsigned char g;
-	unsigned char b;
-	float x;
-	float y;
-};
+std::vector< unsigned char* > colors;
+const int maxColors = 10;
 
 struct uniqueClient
 {
@@ -49,6 +29,7 @@ struct uniqueClient
 		, ipAddressAsString( nullptr )
 		, portAsString( nullptr )
 		, timeSinceLastRecieve( 0.f )
+		, sentMessagesCount( 0 )
 	{
 
 	}
@@ -59,16 +40,18 @@ struct uniqueClient
 		, ipAddressAsString( ipAddress )
 		, portAsString( port )
 		, timeSinceLastRecieve( 0.f )
+		, sentMessagesCount( 0 )
 	{
 
 	}
 
-	uniqueClient( const std::string& ipAddress, const std::string& port, const packet& incomingPacket )
+	uniqueClient( const std::string& ipAddress, const std::string& port, const CS6Packet& incomingPacket )
 		: mostRecentInfo( incomingPacket )
 		, ID( port + ipAddress )
 		, ipAddressAsString( ipAddress )
 		, portAsString( port )
 		, timeSinceLastRecieve( 0.f )
+		, sentMessagesCount( 0 )
 	{
 
 	}
@@ -76,9 +59,28 @@ struct uniqueClient
 	std::string ID;
 	std::string ipAddressAsString;
 	std::string portAsString;
-	packet mostRecentInfo;
+	CS6Packet mostRecentInfo;
 	float timeSinceLastRecieve;
+
+	unsigned int sentMessagesCount;
+
+	std::map< unsigned int, CS6Packet > m_packetsThatPotentiallyFailedToBeReceived;
 };
+
+const int BUFFER_LIMIT = 512;
+const float MAX_SECONDS_OF_INACTIVITY = 5.f;
+const float SEND_DELAY = 0.15f;
+const float RAND_MAX_INVERSE = 1.f / (float)RAND_MAX;
+
+const float RESEND_GUARANTEED_MAX_DELAY = 0.25f;
+
+float currentSendElapsedTime = 0.f;
+
+u_long BLOCKING = 0;
+u_long NON_BLOCKING = 1;
+
+float g_flagX = 0.f;
+float g_flagY = 0.f;
 
 //-----------------------------------------------------------------------------------------------
 void ToUpperCaseString( std::string& outString );
@@ -86,28 +88,40 @@ void ToUpperCaseString( std::string& outString );
 void PromptUserForIPAndPortInfo( std::string& ipAddress_out, std::string& port_out );
 bool InitializeWinSocket();
 bool CreateAddressInfoForUDP( const std::string& ipAddress, const std::string& udpPort, sockaddr_in& udpAddressInfo );
-bool CreateUDPSocket( sockaddr_in& addressInfo, SOCKET& newSocket );
-bool BindSocket( SOCKET& socketToBind, addrinfo*& addressInfo );
-bool UDPSendMessage( const SOCKET& socketToSendThru, const char* message, int messageLength );
-bool UDPServerRecieveMessage( const SOCKET& serverSocket );
+bool CreateUDPSocket( SOCKET& newSocket, sockaddr_in& addressInfo );
+bool BindSocket( SOCKET& socketToBind, sockaddr_in& addressInfo );
 
-bool SetupUDPServer( const std::string& ipaddress, const std::string& udpPort, sockaddr_in& serverAddressInfo_out, SOCKET& udpServerSocket_out );
+bool UDPSendMessageServer( const SOCKET& socketToSendThru, const sockaddr_in& sendToAddrInfo, const char* message, int messageLength );
+bool UDPReceiveMessageServer( const SOCKET& socketToRecieveMessageThru );
 bool RunUDPServer( SOCKET& udpServerSocket );
+
 void AddClientToListOfConnectedClients( const sockaddr_in& senderInfo, const char* receiveBuffer );
-packet CreatePacketFromBuffer( const char* buffer );
+CS6Packet CreatePacketFromBuffer( const char* buffer );
 void UDPServerRemoveInactiveClients();
 void UDPServerDisplayConnectedClients();
 void UDPServerBroadcastPackets( SOCKET& udpSocket );
 void UDPServerUpdateClientTimes();
 
-sockaddr_in UDPServerAddressInfo;
-std::string IPAddressAsStringForServer;
-std::string portAsStringForServer;
+void ProcessMessageFromClient( const char* buffer, const sockaddr_in& senderInfo );
+void OnReceiveUpdate( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
+void OnReceiveAck( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
+void OnReceiveVictory( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
+void OnAckAcknowledge( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
+void OnAckReset( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
+void OnAckVictory( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo );
 
-u_long BLOCKING = 0;
-u_long NON_BLOCKING = 1;
+void SetRandomFlagPosition();
+void ResendAnyGuaranteedPacketsIfThresholdIsMet();
+void CreateColorsForPlayers();
+void GetColorForPlayer( int playerIndex, unsigned char *rgb );
 
+std::string ipAddressAsString;
+std::string portAsString;
+
+sockaddr_in UDPServerAddrInfo;
 std::vector< uniqueClient > g_relevantClients;
+
+SOCKET UDPServerSocket = INVALID_SOCKET;
 
 //-----------------------------------------------------------------------------------------------
 int __cdecl main(int argc, char **argv)
@@ -115,28 +129,36 @@ int __cdecl main(int argc, char **argv)
 	UNUSED( argc );
 	UNUSED( argv );
 
+	srand( ( unsigned int )time ( NULL ) );
+
+	CreateColorsForPlayers();
+
+	SetRandomFlagPosition();
+	
+
 	Time::InitializeTime();
-	PromptUserForIPAndPortInfo( IPAddressAsStringForServer, portAsStringForServer );
+	PromptUserForIPAndPortInfo( ipAddressAsString, portAsString );
 
 	bool serverRunResult = true;
 
-	SOCKET UDPServerSocket = INVALID_SOCKET;
+	
 
-	serverRunResult = SetupUDPServer( IPAddressAsStringForServer, portAsStringForServer, UDPServerAddressInfo, UDPServerSocket );
-
+	serverRunResult = InitializeWinSocket();
+	serverRunResult &= CreateAddressInfoForUDP( ipAddressAsString, portAsString, UDPServerAddrInfo );
+	serverRunResult &= CreateUDPSocket( UDPServerSocket, UDPServerAddrInfo );
 	ioctlsocket( UDPServerSocket, FIONBIO, &NON_BLOCKING );
-
+	serverRunResult &= BindSocket( UDPServerSocket, UDPServerAddrInfo );
 
 	if( serverRunResult )
 	{
-		serverRunResult = RunUDPServer( UDPServerSocket );
+		RunUDPServer( UDPServerSocket );
+
+		shutdown( UDPServerSocket, SD_BOTH );
+		closesocket( UDPServerSocket );
+		WSACleanup();
 	}
 
-	closesocket( UDPServerSocket );
-
-	WSACleanup();
-
-	system( "pause" );
+	system("pause");
 	if( !serverRunResult )
 	{
 		return 1;
@@ -158,7 +180,7 @@ void ToUpperCaseString( std::string& outString )
 //-----------------------------------------------------------------------------------------------
 void PromptUserForIPAndPortInfo( std::string& ipAddress_out, std::string& port_out )
 {
-	std::printf( "\nEnter IP Address for the server: " );
+	std::printf( "Enter IP Address for the server: " );
 	std::cin >> ipAddress_out;
 
 	std::printf( "IP Address of the server is %s\n\n", ipAddress_out.c_str() );
@@ -192,9 +214,11 @@ bool InitializeWinSocket()
 bool CreateAddressInfoForUDP( const std::string& ipAddress, const std::string& udpPort, sockaddr_in& udpAddressInfo )
 {
 
+	UNUSED( ipAddress );
+
 	ZeroMemory( &udpAddressInfo, sizeof( udpAddressInfo ) );
 	udpAddressInfo.sin_family = AF_INET;
-	udpAddressInfo.sin_addr.S_un.S_addr = inet_addr( ipAddress.c_str() );
+	udpAddressInfo.sin_addr.S_un.S_addr = INADDR_ANY;
 	udpAddressInfo.sin_port = htons( u_short( atoi( udpPort.c_str() ) ) );
 
 	return true;
@@ -202,13 +226,19 @@ bool CreateAddressInfoForUDP( const std::string& ipAddress, const std::string& u
 
 
 //-----------------------------------------------------------------------------------------------
-bool CreateUDPSocket( sockaddr_in& addressInfo, SOCKET& newSocket )
+bool CreateUDPSocket( SOCKET& newSocket, sockaddr_in& addressInfo )
 {
+	char optval;
+
 	newSocket = socket( addressInfo.sin_family, SOCK_DGRAM, IPPROTO_UDP );
+	setsockopt( newSocket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof( optval ) );
 
 	if( newSocket == INVALID_SOCKET )
 	{
 		printf( "socket failed with error: %ld\n", WSAGetLastError() );
+
+		shutdown( newSocket, SD_BOTH );
+		closesocket( newSocket );
 		WSACleanup();
 
 		return false;
@@ -229,6 +259,7 @@ bool BindSocket( SOCKET& socketToBind, sockaddr_in& addressInfo )
 	{
 		printf( "bind failed with error: %d\n", WSAGetLastError() );
 
+		shutdown( socketToBind, SD_BOTH );
 		closesocket( socketToBind );
 		WSACleanup();
 
@@ -238,12 +269,13 @@ bool BindSocket( SOCKET& socketToBind, sockaddr_in& addressInfo )
 	return true;
 }
 
+
 //-----------------------------------------------------------------------------------------------
-bool UDPSendMessage( const SOCKET& socketToSendThru, const char* message, int messageLength, sockaddr_in& udpAddressInfo )
+bool UDPSendMessageServer( const SOCKET& socketToSendThru, const sockaddr_in& sendToAddrInfo, const char* message, int messageLength )
 {
 	int sendResultAsInt;
 
-	sendResultAsInt = sendto( socketToSendThru, message, messageLength, 0, (struct sockaddr *)&udpAddressInfo, sizeof( udpAddressInfo ) );
+	sendResultAsInt = sendto( socketToSendThru, message, messageLength, 0, (struct sockaddr *)&sendToAddrInfo, sizeof( sockaddr_in ) );
 
 	if ( sendResultAsInt == SOCKET_ERROR ) 
 	{
@@ -255,120 +287,28 @@ bool UDPSendMessage( const SOCKET& socketToSendThru, const char* message, int me
 }
 
 //-----------------------------------------------------------------------------------------------
-bool UDPServerRecieveMessage( const SOCKET& serverSocket )
-{
-	char receiveBuffer[ BUFFER_LIMIT ];
-	memset( receiveBuffer, '\0', BUFFER_LIMIT );
-
-	int bytesReceived = 0;
-
-	sockaddr_in senderInfo;
-	int senderInfoLength = sizeof( senderInfo );
-
-	bytesReceived = recvfrom( serverSocket, receiveBuffer, BUFFER_LIMIT, 0, (struct sockaddr *)&senderInfo, &senderInfoLength );
-
-	if( bytesReceived == sizeof( packet ) )
-	{
-		AddClientToListOfConnectedClients( senderInfo, receiveBuffer );
-		return true;
-	}
-	else if( bytesReceived > 0 )
-	{
-		std::printf( "Server received message: %s\n\n", receiveBuffer );
-		return true;
-	}
-	else
-	{
-		return false;
-	}
-}
-
-//-----------------------------------------------------------------------------------------------
-bool SetupUDPServer( const std::string& ipaddress, const std::string& udpPort, sockaddr_in& serverAddressInfo_out, SOCKET& udpServerSocket_out )
-{
-	bool wasAllInitializationSuccessful = true;
-
-	wasAllInitializationSuccessful &= InitializeWinSocket();
-	wasAllInitializationSuccessful &= CreateAddressInfoForUDP( ipaddress, udpPort, serverAddressInfo_out );
-
-	if( !wasAllInitializationSuccessful )
-	{
-		return false;
-	}
-
-	wasAllInitializationSuccessful &= CreateUDPSocket( serverAddressInfo_out, udpServerSocket_out );
-
-	if( !wasAllInitializationSuccessful )
-	{
-		return false;
-	}
-
-	wasAllInitializationSuccessful &= BindSocket( udpServerSocket_out, serverAddressInfo_out );
-
-	if( !wasAllInitializationSuccessful )
-	{
-		return false;
-	}
-
-	return wasAllInitializationSuccessful;
-}
-
-
-//-----------------------------------------------------------------------------------------------
 bool RunUDPServer( SOCKET& udpServerSocket )
 {
-	bool runUntilAppClosed = true;
+	bool shouldQuit = false;
 
-	while( runUntilAppClosed )
+	while( !shouldQuit )
 	{
-		UDPServerRecieveMessage( udpServerSocket );
+		shouldQuit &= UDPReceiveMessageServer( udpServerSocket );
 		UDPServerRemoveInactiveClients();
 		UDPServerDisplayConnectedClients();
 		UDPServerBroadcastPackets( udpServerSocket );
 		UDPServerUpdateClientTimes();
 	}
 
-	return runUntilAppClosed;
+	return shouldQuit;
 }
 
 //-----------------------------------------------------------------------------------------------
-void AddClientToListOfConnectedClients( const sockaddr_in& senderInfo, const char* receiveBuffer )
+CS6Packet CreatePacketFromBuffer( const char* buffer )
 {
-	char buffer[ 100 ];
+	CS6Packet* result = nullptr;
 
-	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
-	std::string senderPort = _itoa( static_cast< int >( senderInfo.sin_port ), buffer, 10 );
-
-	std::string senderID = senderPort + senderIP;
-
-	packet newPacket = CreatePacketFromBuffer( receiveBuffer );
-
-	auto iter = g_relevantClients.begin();
-
-	for( ; iter != g_relevantClients.end(); ++iter )
-	{
-		if( iter->ID == senderID )
-		{
-			iter->timeSinceLastRecieve = 0.f;
-			iter->mostRecentInfo = newPacket;
-
-			break;
-		}
-	}	
-
-	if( iter == g_relevantClients.end() )
-	{
-		uniqueClient newClient( senderIP, senderPort, newPacket );
-		g_relevantClients.push_back( newClient );
-	}
-}
-
-//-----------------------------------------------------------------------------------------------
-packet CreatePacketFromBuffer( const char* buffer )
-{
-	packet* result = nullptr;
-
-	result = ( packet* )( buffer );
+	result = ( CS6Packet* )( buffer );
 
 	return *result;
 }
@@ -415,6 +355,7 @@ void UDPServerBroadcastPackets( SOCKET& udpSocket )
 		return;
 	}
 
+	int sizeOfPacket = sizeof( CS6Packet );
 	auto iter = g_relevantClients.begin();
 
 	sockaddr_in clientInfo;
@@ -430,8 +371,12 @@ void UDPServerBroadcastPackets( SOCKET& udpSocket )
 
 		for( int i = 0; i < static_cast< int >( g_relevantClients.size() ); ++i )
 		{
+			++iter->sentMessagesCount;
+			++iter->mostRecentInfo.packetNumber;
+
 			char* message = ( char* )&g_relevantClients[ i ].mostRecentInfo;
-			UDPSendMessage( udpSocket, message, sizeof( packet ), clientInfo );
+			
+			UDPSendMessageServer( udpSocket, clientInfo, message, sizeOfPacket );
 		}
 	}
 	currentSendElapsedTime = 0.f;
@@ -455,4 +400,444 @@ void UDPServerUpdateClientTimes()
 	currentSendElapsedTime += deltaSeconds;
 
 	timeAtLastUpdate = timeNow;
+}
+
+//-----------------------------------------------------------------------------------------------
+bool UDPReceiveMessageServer( const SOCKET& socketToRecieveMessageThru )
+{
+	bool shouldQuitApp = false;
+
+	char receiveBuffer[ BUFFER_LIMIT ];
+	memset( receiveBuffer, '\0', BUFFER_LIMIT );	
+
+	sockaddr_in clientAddrInfo;
+	int addrInfoLength = sizeof( sockaddr_in );
+	int bytesReceived = 0;
+
+	do 
+	{
+		ZeroMemory( &clientAddrInfo, sizeof( clientAddrInfo ) );
+		memset( receiveBuffer, '\0', BUFFER_LIMIT );
+		bytesReceived = 0;
+
+		bytesReceived = recvfrom( socketToRecieveMessageThru, receiveBuffer, BUFFER_LIMIT, 0, (struct sockaddr *)&clientAddrInfo, &addrInfoLength );
+
+		if( bytesReceived == sizeof( CS6Packet ) )
+		{
+			ProcessMessageFromClient( receiveBuffer, clientAddrInfo );
+		}
+	} 
+	while ( bytesReceived > 0 );
+
+	return shouldQuitApp;
+}
+
+//-----------------------------------------------------------------------------------------------
+void ProcessMessageFromClient( const char* buffer, const sockaddr_in& senderInfo )
+{
+	CS6Packet bufferAsPacket = CreatePacketFromBuffer( buffer );
+
+	PacketType typeOfPacket = bufferAsPacket.packetType;
+
+	if( typeOfPacket == TYPE_Update )
+	{
+		OnReceiveUpdate( bufferAsPacket, senderInfo );
+	}
+	else if( typeOfPacket == TYPE_Acknowledge )
+	{
+		OnReceiveAck( bufferAsPacket, senderInfo );
+	}
+	else if( typeOfPacket == TYPE_Victory )
+	{
+		OnReceiveVictory( bufferAsPacket, senderInfo );
+	}
+}
+
+
+void OnReceiveUpdate( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	char buffer[ 100 ];
+
+	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
+	std::string senderPort = _itoa( static_cast< int >( ntohs( senderInfo.sin_port ) ), buffer, 10 );
+
+	std::string senderID = senderPort + senderIP;
+
+	auto iter = g_relevantClients.begin();
+
+	for( ; iter != g_relevantClients.end(); ++iter )
+	{
+		if( iter->ID == senderID )
+		{
+			iter->timeSinceLastRecieve = 0.f;
+
+			iter->mostRecentInfo.data.updated.xPosition = bufferAsPacket.data.updated.xPosition;
+			iter->mostRecentInfo.data.updated.yPosition = bufferAsPacket.data.updated.yPosition;
+			iter->mostRecentInfo.data.updated.xVelocity = bufferAsPacket.data.updated.xVelocity;
+			iter->mostRecentInfo.data.updated.yVelocity = bufferAsPacket.data.updated.yVelocity;
+			iter->mostRecentInfo.data.updated.yawDegrees = bufferAsPacket.data.updated.yawDegrees;
+
+			break;
+		}
+	}	
+}
+
+
+void OnReceiveAck( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	PacketType typeOfAck = bufferAsPacket.data.acknowledged.packetType;
+
+	if( typeOfAck == TYPE_Acknowledge )
+	{
+		OnAckAcknowledge( bufferAsPacket, senderInfo );
+	}
+	else if( typeOfAck == TYPE_Reset )
+	{
+		OnAckReset( bufferAsPacket, senderInfo );
+	}
+	else if( typeOfAck == TYPE_Victory )
+	{
+		OnAckVictory( bufferAsPacket, senderInfo );
+	}
+}
+
+
+void OnReceiveVictory( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	SetRandomFlagPosition();
+
+	char buffer[ 100 ];
+
+	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
+	std::string senderPort = _itoa( static_cast< int >( ntohs( senderInfo.sin_port ) ), buffer, 10 );
+
+	std::string senderID = senderPort + senderIP;
+
+	auto iter = g_relevantClients.begin();
+
+	for( ; iter != g_relevantClients.end(); ++iter )
+	{
+		if( iter->ID == senderID )
+		{
+			iter->timeSinceLastRecieve = 0.f;
+
+			++iter->sentMessagesCount;
+			++iter->mostRecentInfo.packetNumber;
+
+			CS6Packet ackBack;
+
+			ackBack.packetType = TYPE_Acknowledge;
+			ackBack.packetNumber = iter->sentMessagesCount;
+			ackBack.data.acknowledged.packetType = TYPE_Victory;
+
+			UDPSendMessageServer( UDPServerSocket, senderInfo, ( char* )&ackBack, sizeof( CS6Packet ) );
+
+			break;
+		}
+	}
+
+	if( iter == g_relevantClients.end() )
+	{
+		return;
+	}
+
+	CS6Packet victoryPacket;
+	victoryPacket.packetType = TYPE_Victory;
+	victoryPacket.data.victorious.playerColorAndID[ 0 ] = iter->mostRecentInfo.playerColorAndID[ 0 ];
+	victoryPacket.data.victorious.playerColorAndID[ 1 ] = iter->mostRecentInfo.playerColorAndID[ 1 ];
+	victoryPacket.data.victorious.playerColorAndID[ 2 ] = iter->mostRecentInfo.playerColorAndID[ 2 ];
+
+	iter = g_relevantClients.begin();
+
+	for( ; iter != g_relevantClients.end(); ++iter )
+	{
+		++( *iter ).sentMessagesCount;
+		++( *iter ).mostRecentInfo.packetNumber;
+
+		sockaddr_in clientInfo;
+
+		clientInfo.sin_family = AF_INET;
+		clientInfo.sin_port = htons( u_short( atoi( iter->portAsString.c_str() ) ) );
+		clientInfo.sin_addr.S_un.S_addr = inet_addr( iter->ipAddressAsString.c_str() );
+
+		victoryPacket.packetNumber = iter->sentMessagesCount;
+		iter->m_packetsThatPotentiallyFailedToBeReceived[ iter->sentMessagesCount ] = victoryPacket;
+
+		UDPSendMessageServer( UDPServerSocket, clientInfo, ( char* )&victoryPacket, sizeof( CS6Packet ) );
+	}
+}
+
+
+void OnAckAcknowledge( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	char buffer[ 100 ];
+
+	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
+	std::string senderPort = _itoa( static_cast< int >( ntohs( senderInfo.sin_port ) ), buffer, 10 );
+
+	std::string senderID = senderPort + senderIP;
+
+
+	auto iter = g_relevantClients.begin();
+
+	for( ; iter != g_relevantClients.end(); ++iter )
+	{
+		if( iter->ID == senderID )
+		{
+			iter->timeSinceLastRecieve = 0.f;
+
+			break;
+		}
+	}	
+
+	if( iter == g_relevantClients.end() )
+	{
+		uniqueClient newClient( senderIP, senderPort, bufferAsPacket );
+		g_relevantClients.push_back( newClient );
+
+		++g_relevantClients.back().sentMessagesCount;
+		++g_relevantClients.back().mostRecentInfo.packetNumber;
+
+		CS6Packet resetPacket;
+
+		resetPacket.packetType = TYPE_Reset;
+		resetPacket.packetNumber = g_relevantClients.back().sentMessagesCount;
+
+		resetPacket.playerColorAndID[ 0 ] = rand() % 255;
+		resetPacket.playerColorAndID[ 1 ] = rand() % 255;
+		resetPacket.playerColorAndID[ 2 ] = rand() % 255;
+
+		resetPacket.data.reset.playerColorAndID[ 0 ] = resetPacket.playerColorAndID[ 0 ];
+		resetPacket.data.reset.playerColorAndID[ 1 ] = resetPacket.playerColorAndID[ 1 ];
+		resetPacket.data.reset.playerColorAndID[ 2 ] = resetPacket.playerColorAndID[ 2 ];
+
+		//GetColorForPlayer( g_relevantClients.size() - 1, resetPacket.playerColorAndID );
+		//memcpy( &resetPacket.data.reset.playerColorAndID, &resetPacket.playerColorAndID, sizeof( resetPacket.playerColorAndID ) );
+
+		resetPacket.timestamp = Time::GetCurrentTimeInSeconds();
+		
+
+		float randomX = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+		float randomY = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+
+		resetPacket.data.reset.playerXPosition = randomX;
+		resetPacket.data.reset.playerYPosition = randomY;
+		resetPacket.data.reset.flagXPosition = g_flagX;
+		resetPacket.data.reset.flagYPosition = g_flagY;
+
+		g_relevantClients.back().m_packetsThatPotentiallyFailedToBeReceived[ g_relevantClients.back().sentMessagesCount ] = resetPacket;
+
+		UDPSendMessageServer( UDPServerSocket, senderInfo, ( char* )&resetPacket, sizeof( resetPacket ) );
+	}
+}
+
+
+void OnAckReset( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	char buffer[ 100 ];
+
+	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
+	std::string senderPort = _itoa( static_cast< int >( ntohs( senderInfo.sin_port ) ), buffer, 10 );
+
+	std::string senderID = senderPort + senderIP;
+
+	auto iter = g_relevantClients.begin();
+	
+	while( iter != g_relevantClients.end() )
+	{
+		if( iter->ID == senderID )
+		{
+			iter->timeSinceLastRecieve = 0.f;
+			iter->m_packetsThatPotentiallyFailedToBeReceived.erase( bufferAsPacket.data.acknowledged.packetNumber );
+
+			break;
+		}
+
+		++iter;
+	}
+}
+
+//-----------------------------------------------------------------------------------------------
+void OnAckVictory( const CS6Packet& bufferAsPacket, const sockaddr_in& senderInfo )
+{
+	char buffer[ 100 ];
+
+	std::string senderIP = inet_ntoa( senderInfo.sin_addr );
+	std::string senderPort = _itoa( static_cast< int >( ntohs( senderInfo.sin_port ) ), buffer, 10 );
+
+	std::string senderID = senderPort + senderIP;
+
+	auto iter = g_relevantClients.begin();
+
+	int playerIndex = 0;
+
+	while( iter != g_relevantClients.end() )
+	{
+		if( iter->ID == senderID )
+		{
+			iter->timeSinceLastRecieve = 0.f;
+			iter->m_packetsThatPotentiallyFailedToBeReceived.erase( bufferAsPacket.data.acknowledged.packetNumber );
+
+			++iter->sentMessagesCount;
+			++iter->mostRecentInfo.packetNumber;
+
+			CS6Packet resetPacket;
+
+			resetPacket.packetType = TYPE_Reset;
+			resetPacket.packetNumber = iter->sentMessagesCount;
+			//GetColorForPlayer( playerIndex, resetPacket.playerColorAndID );
+			//memcpy( &resetPacket.data.reset.playerColorAndID, &resetPacket.playerColorAndID, sizeof( resetPacket.playerColorAndID ) );
+
+			resetPacket.playerColorAndID[ 0 ] = rand() % 255;
+			resetPacket.playerColorAndID[ 1 ] = rand() % 255;
+			resetPacket.playerColorAndID[ 2 ] = rand() % 255;
+
+			resetPacket.data.reset.playerColorAndID[ 0 ] = resetPacket.playerColorAndID[ 0 ];
+			resetPacket.data.reset.playerColorAndID[ 1 ] = resetPacket.playerColorAndID[ 1 ];
+			resetPacket.data.reset.playerColorAndID[ 2 ] = resetPacket.playerColorAndID[ 2 ];
+
+			resetPacket.timestamp = Time::GetCurrentTimeInSeconds();
+
+			float randomX = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+			float randomY = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+
+			resetPacket.data.reset.playerXPosition = randomX;
+			resetPacket.data.reset.playerYPosition = randomY;
+			resetPacket.data.reset.flagXPosition = g_flagX;
+			resetPacket.data.reset.flagYPosition = g_flagY;
+
+			iter->m_packetsThatPotentiallyFailedToBeReceived[ iter->sentMessagesCount ] = resetPacket;
+
+			UDPSendMessageServer( UDPServerSocket, senderInfo, ( char* )&resetPacket, sizeof( resetPacket ) );
+
+			break;
+		}
+
+		++playerIndex;
+		++iter;
+	}
+}
+
+
+//-----------------------------------------------------------------------------------------------
+void SetRandomFlagPosition()
+{
+	g_flagX = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+	g_flagY = 500.f * static_cast<float>( rand() ) * RAND_MAX_INVERSE;
+}
+
+//-----------------------------------------------------------------------------------------------
+void ResendAnyGuaranteedPacketsIfThresholdIsMet()
+{
+	double currentTime = Time::GetCurrentTimeInSeconds();
+
+	auto iter = g_relevantClients.begin();
+
+	for( ; iter != g_relevantClients.end(); ++iter )
+	{
+		auto mapIter = ( *iter ).m_packetsThatPotentiallyFailedToBeReceived.begin();
+
+		for( ; mapIter != ( *iter ).m_packetsThatPotentiallyFailedToBeReceived.end(); ++mapIter )
+		{
+			double timeDifference = currentTime - mapIter->second.timestamp;
+
+			if( timeDifference > RESEND_GUARANTEED_MAX_DELAY )
+			{
+				mapIter->second.timestamp = currentTime;
+				++mapIter->second.packetNumber;
+				++iter->sentMessagesCount;
+				
+				sockaddr_in clientAddrInfo;
+
+				clientAddrInfo.sin_family = AF_INET;
+				clientAddrInfo.sin_addr.S_un.S_addr = inet_addr( iter->ipAddressAsString.c_str() );
+				clientAddrInfo.sin_port = htons( u_short( atoi( iter->portAsString.c_str() ) ) );
+				UDPSendMessageServer( UDPServerSocket, clientAddrInfo, ( char* )&mapIter->second, sizeof( CS6Packet ) );
+			}
+			
+		}
+	}
+}
+
+
+void CreateColorsForPlayers()
+{
+	unsigned char color[ 3 ];
+
+	color[ 0 ] = 255;
+	color[ 1 ] = 0;
+	color[ 2 ] = 0;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 0;
+	color[ 1 ] = 255;
+	color[ 2 ] = 0;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 0;
+	color[ 1 ] = 0;
+	color[ 2 ] = 255;
+
+	colors.push_back( color );
+
+
+	color[ 0 ] = 255;
+	color[ 1 ] = 255;
+	color[ 2 ] = 0;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 0;
+	color[ 1 ] = 255;
+	color[ 2 ] = 255;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 255;
+	color[ 1 ] = 0;
+	color[ 2 ] = 255;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 255;
+	color[ 1 ] = 127;
+	color[ 2 ] = 127;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 127;
+	color[ 1 ] = 255;
+	color[ 2 ] = 127;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 127;
+	color[ 1 ] = 127;
+	color[ 2 ] = 255;
+
+	colors.push_back( color );
+
+	color[ 0 ] = 127;
+	color[ 1 ] = 127;
+	color[ 2 ] = 127;
+
+	colors.push_back( color );
+}
+
+void GetColorForPlayer( int playerIndex, unsigned char *rgb )
+{
+
+	//if( playerIndex < maxColors )
+	//{
+	//	memcpy( &rgb, &colors[ playerIndex ], sizeof( rgb ) );
+	//}
+	//else
+	//{
+		rgb[ 0 ] = rand() % 255;
+		rgb[ 1 ] = rand() % 255;
+		rgb[ 2 ] = rand() % 255;
+	//}
+
 }

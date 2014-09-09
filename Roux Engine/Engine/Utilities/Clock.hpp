@@ -29,6 +29,7 @@ public:
 	inline void		AddAlarmWithLengthAndParameters( const std::string& alarmName, float lengthInSeconds, NamedProperties& parameters );
 	inline float	GetPercentageElapsedForAlarm( const std::string& alarmName ) const;
 	inline float	GetSecondsElapsedForAlarm( const std::string& alarmName ) const;
+	NamedProperties& GetPropertiesFromAlarmWithName( const std::string& alarmName );
 
 	static Clock&	GetMasterClock()
 	{
@@ -137,5 +138,7 @@ float Clock::GetSecondsElapsedForAlarm( const std::string& alarmName ) const
 
 	return result;
 }
+
+
 
 #endif

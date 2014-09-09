@@ -18,5 +18,6 @@
     <ClInclude Include="Time.hpp">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="CS6Packet.hpp" />
   </ItemGroup>
 </Project>

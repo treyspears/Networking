@@ -2,6 +2,8 @@
 
 #include "Engine/Utilities/EventSystem.hpp"
 
+NamedProperties g_emptyProperties = NamedProperties::EmptyProperties();
+
 //-----------------------------------------------------------------------------------------------
 Clock::Clock() 
 	 : m_parentClock( nullptr )
@@ -116,4 +118,17 @@ void Clock::AdvanceAlarms( double deltaSeconds )
 			++iter;
 		}
 	}
+}
+
+//-----------------------------------------------------------------------------------------------
+NamedProperties& Clock::GetPropertiesFromAlarmWithName( const std::string& alarmName )
+{
+	auto foundIter = m_alarms.find( alarmName );
+
+	if( foundIter != m_alarms.end() )
+	{
+		return foundIter->second.parametersToSendWhenTriggered;
+	}
+
+	return g_emptyProperties;
 }

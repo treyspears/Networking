@@ -18,6 +18,9 @@
     <ClCompile Include="Game\Game.cpp">
       <Filter>GameCode</Filter>
     </ClCompile>
+    <ClCompile Include="Game\AppCommandLineListener.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Data\CameraData\CameraDefinitions.xml">
@@ -59,6 +62,12 @@
       <Filter>GameCode</Filter>
     </ClInclude>
     <ClInclude Include="Game\Game.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\AppCommandLineListener.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CS6Packet.hpp">
       <Filter>GameCode</Filter>
     </ClInclude>
   </ItemGroup>
