@@ -1,0 +1,74 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="GameCode">
+      <UniqueIdentifier>{79ec3bee-1dd8-4726-b865-9a8a30719b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{b0cac44d-0379-4715-aa6c-695bc305bd07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{d431f0ee-c118-44d5-abcc-d874f6c4988f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Game\Main_Win32.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Game.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\AppCommandLineListener.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\CameraData\CameraDefinitions.xml">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\Shaders\Actor_Fragment_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\FFP_Fragment_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\FFP_Vertex_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Font_Fragment_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Font_Vertex_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Fragment_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Fragment_Shader_330.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Vertex_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Vertex_Shader_330.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\A_Vertex_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game\AppDefinesForEngine.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Game.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\AppCommandLineListener.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CS6Packet.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
