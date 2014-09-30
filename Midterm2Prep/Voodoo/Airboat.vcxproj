@@ -1,0 +1,150 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{372D42BA-3C6A-43F1-B2E8-A9EBA470A519}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Airboat</RootNamespace>
+    <ProjectName>Voodoo</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Temp\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Run_Windows_32/</OutDir>
+    <IntDir>$(SolutionDir)Temp\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level4</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Roux Engine/;$(SolutionDir)</AdditionalIncludeDirectories>
+      <MinimalRebuild>false</MinimalRebuild>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>$(SolutionDir)../Roux Engine/Engine/External/Libraries/;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>fmodex_vc.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>xcopy "$(SolutionDir)..\Roux Engine\Engine\External\Libraries\*" "$(SolutionDir)Temp\$(Configuration)" /y/e/s/i/r
+xcopy "$(SolutionDir)..\Roux Engine\Engine\External\DLLs\*" "$(SolutionDir)Temp\$(Configuration)" /y/e/s/i/r</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level4</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;_CRT_SECURE_NO_WARNINGS;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)../Roux Engine/;$(SolutionDir)</AdditionalIncludeDirectories>
+      <MinimalRebuild>false</MinimalRebuild>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>$(SolutionDir)../Roux Engine/Engine/External/Libraries/;%(AdditionalIncludeDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>fmodex_vc.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+    <PostBuildEvent>
+      <Command>xcopy "$(SolutionDir)Data\*" "$(SolutionDir)Run_Windows_32\Data" /y/e/s/i/r
+xcopy "$(SolutionDir)..\Roux Engine\Engine\External\DLLs" "$(SolutionDir)Run_Windows_32" /y/e/s/i/r
+erase "$(SolutionDir)Run_Windows_32\$(ProjectName).pdb"</Command>
+    </PostBuildEvent>
+    <PreLinkEvent>
+      <Command>xcopy "$(SolutionDir)..\Roux Engine\Engine\External\Libraries\*" "$(SolutionDir)Temp\$(Configuration)" /y/e/s/i/r
+xcopy "$(SolutionDir)..\Roux Engine\Engine\External\DLLs\*" "$(SolutionDir)Temp\$(Configuration)" /y/e/s/i/r</Command>
+    </PreLinkEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="Game\AppCommandLineListener.cpp" />
+    <ClCompile Include="Game\Client.cpp" />
+    <ClCompile Include="Game\ClientPlayer.cpp" />
+    <ClCompile Include="Game\ConnectedClient.cpp" />
+    <ClCompile Include="Game\Game.cpp" />
+    <ClCompile Include="Game\Main_Win32.cpp" />
+    <ClCompile Include="Game\Server.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\CameraData\CameraDefinitions.xml">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Data\Shaders\Actor_Fragment_110.glsl" />
+    <None Include="Data\Shaders\A_Vertex_110.glsl" />
+    <None Include="Data\Shaders\FFP_Fragment_110.glsl" />
+    <None Include="Data\Shaders\FFP_Vertex_110.glsl" />
+    <None Include="Data\Shaders\Font_Fragment_Shader_110.glsl" />
+    <None Include="Data\Shaders\Font_Vertex_Shader_110.glsl" />
+    <None Include="Data\Shaders\Fragment_Shader_110.glsl" />
+    <None Include="Data\Shaders\Fragment_Shader_330.glsl" />
+    <None Include="Data\Shaders\Vertex_Shader_110.glsl" />
+    <None Include="Data\Shaders\Vertex_Shader_330.glsl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Roux Engine\Roux.vcxproj">
+      <Project>{b19c2492-bb51-4179-b112-11277b7bdfc6}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game\AppCommandLineListener.hpp" />
+    <ClInclude Include="Game\AppDefinesForEngine.hpp" />
+    <ClInclude Include="Game\Client.hpp" />
+    <ClInclude Include="Game\ClientPlayer.hpp" />
+    <ClInclude Include="Game\ConnectedClient.hpp" />
+    <ClInclude Include="Game\CS6Packet.hpp" />
+    <ClInclude Include="Game\Game.hpp" />
+    <ClInclude Include="Game\Server.hpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

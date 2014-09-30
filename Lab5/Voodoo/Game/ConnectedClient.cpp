@@ -1,0 +1,49 @@
+#include "ConnectedClient.hpp"
+
+ConnectionID ConnectedClient::s_currentConnectedID = 0;
+
+//-----------------------------------------------------------------------------------------------
+ConnectedClient::ConnectedClient()
+	: clientID( "" )
+	, ipAddressAsString( "" )
+	, portAsString( "" )
+	, mostRecentUpdateInfo()
+	, timeSinceLastReceivedMessage( 0.f )
+	, numUnreliableMessagesSent( 0 )
+	, numReliableMessagesSent( 0 )
+	, connectionID( 0 )
+{
+	memset( &mostRecentUpdateInfo, 0, sizeof( mostRecentUpdateInfo ) );
+	memset( &playerIDAsRGB, 0, sizeof( playerIDAsRGB ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+ConnectedClient::ConnectedClient( const std::string& ipAddress, const std::string& port )
+	: clientID( port + ipAddress )
+	, ipAddressAsString( ipAddress )
+	, portAsString( port )
+	, mostRecentUpdateInfo()
+	, timeSinceLastReceivedMessage( 0.f )
+	, numUnreliableMessagesSent( 0 )
+	, numReliableMessagesSent( 0 )
+	, connectionID( 0 )
+{
+	memset( &mostRecentUpdateInfo, 0, sizeof( mostRecentUpdateInfo ) );
+	memset( &playerIDAsRGB, 0, sizeof( playerIDAsRGB ) );
+}
+
+
+//-----------------------------------------------------------------------------------------------
+ConnectedClient::ConnectedClient( const std::string& ipAddress, const std::string& port, const UpdatePacket& incomingPacket )
+	: clientID( port + ipAddress )
+	, ipAddressAsString( ipAddress )
+	, portAsString( port )
+	, mostRecentUpdateInfo( incomingPacket )
+	, timeSinceLastReceivedMessage( 0.f )
+	, numUnreliableMessagesSent( 0 )
+	, numReliableMessagesSent( 0 )
+	, connectionID( 0 )
+{
+	memset( &playerIDAsRGB, 0, sizeof( playerIDAsRGB ) );
+}
