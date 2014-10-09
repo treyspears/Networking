@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="GameCode">
+      <UniqueIdentifier>{79ec3bee-1dd8-4726-b865-9a8a30719b99}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Data">
+      <UniqueIdentifier>{b0cac44d-0379-4715-aa6c-695bc305bd07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{d431f0ee-c118-44d5-abcc-d874f6c4988f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameCode\NetworkCode">
+      <UniqueIdentifier>{fdcbaa6b-7737-4a37-92f6-3ffcfc8df037}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameCode\NetworkCode\Client">
+      <UniqueIdentifier>{6b38249c-69b8-47be-bd99-d041a7e8a2f6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameCode\Camera">
+      <UniqueIdentifier>{65733b4b-64dd-45e2-89cd-230fe9801c81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameCode\Camera\Controllers">
+      <UniqueIdentifier>{d0fee065-8ff7-46fa-b1c6-8324a0a87c5d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="GameCode\Camera\Stimuli">
+      <UniqueIdentifier>{2e60502c-8d71-4e43-ad70-d895af4c8720}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Game\Main_Win32.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Game.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\AppCommandLineListener.cpp">
+      <Filter>GameCode</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Client.cpp">
+      <Filter>GameCode\NetworkCode\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\ClientPlayer.cpp">
+      <Filter>GameCode\NetworkCode\Client</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Camera3D.cpp">
+      <Filter>GameCode\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CameraBlueprint.cpp">
+      <Filter>GameCode\Camera</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\PhysicsControllerStrategy.cpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\FirstPersonControllerStrategy.cpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\CameraController.cpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Game\Stimuli.cpp">
+      <Filter>GameCode\Camera\Stimuli</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Data\CameraData\CameraDefinitions.xml">
+      <Filter>Data</Filter>
+    </None>
+    <None Include="Data\Shaders\Actor_Fragment_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\FFP_Fragment_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\FFP_Vertex_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Font_Fragment_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Font_Vertex_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Fragment_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Fragment_Shader_330.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Vertex_Shader_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\Vertex_Shader_330.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Data\Shaders\A_Vertex_110.glsl">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Game\AppDefinesForEngine.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Game.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\AppCommandLineListener.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Client.hpp">
+      <Filter>GameCode\NetworkCode\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\ClientPlayer.hpp">
+      <Filter>GameCode\NetworkCode\Client</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\FinalPacket.hpp">
+      <Filter>GameCode\NetworkCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Camera3D.hpp">
+      <Filter>GameCode\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CameraBlueprint.hpp">
+      <Filter>GameCode\Camera</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\PhysicsControllerStrategy.hpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\FirstPersonControllerStrategy.hpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CameraController.hpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CameraControllerInterface.hpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\CameraCoordinator.hpp">
+      <Filter>GameCode\Camera\Controllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\GameCommon.hpp">
+      <Filter>GameCode</Filter>
+    </ClInclude>
+    <ClInclude Include="Game\Stimuli.hpp">
+      <Filter>GameCode\Camera\Stimuli</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

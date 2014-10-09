@@ -1,0 +1,6 @@
+<CameraDefinitions>
+
+  <CameraDefinition name="FPS Camera" controllerType="firstPerson">
+  </CameraDefinition>
+  
+</CameraDefinitions>
